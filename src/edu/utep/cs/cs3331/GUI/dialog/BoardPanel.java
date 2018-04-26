@@ -7,7 +7,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.swing.JPanel;
-
+import edu.utep.cs.cs3331.Network.NetworkAdapter;
 import edu.utep.cs.cs3331.sudoku.Board;
 
 /**
@@ -18,7 +18,7 @@ import edu.utep.cs.cs3331.sudoku.Board;
  * @see sudoku.model.Board
  * @author Yoonsik Cheon
  *
- * @author LUISA POLANCO & ANDREA LABRADO :)
+ * @author LUISA POLANCO & ANDREA LABRADO & Brian Riveron:)
  *
  *
  *

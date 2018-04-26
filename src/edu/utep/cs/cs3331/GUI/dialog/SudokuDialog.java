@@ -33,6 +33,7 @@ import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 
 import edu.utep.cs.cs3331.sudoku.Board;
+import edu.utep.cs.cs3331.Network.NetworkAdapter;
 
 /**
  * A dialog template for playing simple Sudoku games.
@@ -44,8 +45,16 @@ import edu.utep.cs.cs3331.sudoku.Board;
 @SuppressWarnings("serial")
 public class SudokuDialog extends JFrame {
 
+
+    //Network Items---------------
+    private NetworkAdapter network;
+
+
+
+
+    //Network Items--------------
     /** Default dimension of the dialog. */
-    private final static Dimension DEFAULT_SIZE = new Dimension(310, 430);
+    private final static Dimension DEFAULT_SIZE = new Dimension(310, 500);
 
     private final static String IMAGE_DIR = "/image/";
 
@@ -62,7 +71,7 @@ public class SudokuDialog extends JFrame {
     private JLabel msgBar = new JLabel("");
 
     /** Buttons for the ToolBar. */
-    JButton newGame, endGame, solveable, solve, partial;
+    JButton newGame, endGame, solveable, solve, partial, netWork;
 
     /** Menu items for dropdown menu. */
     JMenuItem menuItem, menuItem2, menuItem3;
@@ -88,12 +97,8 @@ public class SudokuDialog extends JFrame {
         //setResizable(false);
     }
 
-
-    private void partiallyFillBoard(){
-        board.partialFill();
-    }
     private void checkifSolve() {
-        if(board.check()) {
+        if(board.isSolved()) {//.check()
             SolveableMsg();
         }else {
             NotSolveableMsg();
@@ -137,9 +142,6 @@ public class SudokuDialog extends JFrame {
 
         repaint();
     }
-
-
-
 
     /**
      * Callback to be invoked when a new button is clicked.
@@ -283,7 +285,9 @@ public class SudokuDialog extends JFrame {
         partial.setToolTipText("Partially fill board");
         toolBar.add(partial);
 
-
+        netWork = new JButton(createImageIcon("online.png"));
+        netWork.setToolTipText("Would you like to Network Play");
+        toolBar.add(netWork);
 
 
         return panel;
@@ -329,7 +333,7 @@ public class SudokuDialog extends JFrame {
 
         menuItem.addActionListener(e ->  newClicked(4));
         menuItem0.addActionListener(e ->  newClicked(9));
-        menuItem1.addActionListener(e -> partiallyFillBoard() );
+        //menuItem1.addActionListener(e -> partiallyFillBoard() );
         menuItem2.addActionListener(e -> checkifSolve());
         menuItem3.addActionListener(e -> board.solve());
 
@@ -362,7 +366,7 @@ public class SudokuDialog extends JFrame {
             public void actionPerformed(ActionEvent click) {
                 int input = JOptionPane.showConfirmDialog(null, "Start a new game?", "New Game?", JOptionPane.YES_NO_OPTION);
                 if (input == JOptionPane.YES_OPTION) {
-                    board = new Board(9);
+                    board = new Board(board.size);
                     boardPanel.setBoard(board);
                     boardPanel.repaint();
                 }
@@ -383,7 +387,9 @@ public class SudokuDialog extends JFrame {
             public void actionPerformed(ActionEvent click) {
                 int input = JOptionPane.showConfirmDialog(null, "Do you want to solve your board?", "Solved", JOptionPane.YES_NO_OPTION);
                 if (input == JOptionPane.YES_OPTION) {
-                    solve.addActionListener(e -> board.solve());
+                    //solve.addActionListener(e -> board.solve());
+                    board.solve();
+                    repaint();
                 }
             }
         });
@@ -392,10 +398,14 @@ public class SudokuDialog extends JFrame {
             public void actionPerformed(ActionEvent click) {
                 int input = JOptionPane.showConfirmDialog(null, "Do you want to partially fill your board?","done" , JOptionPane.YES_NO_OPTION);
                 if (input == JOptionPane.YES_OPTION) {
-                    partial.addActionListener(e -> partiallyFillBoard());
+                    board.partialFill();
+                    repaint();
                 }
             }
         });
+
+
+
 
     }
 

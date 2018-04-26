@@ -15,6 +15,7 @@ public class Board {
      */
     private PrintStream out = System.out;
     public int[][] table;
+    public int[][] completeBoard;
     private static int No_Input = 0;
     private boolean [][] truthTable;
     private boolean solvable = false;
@@ -38,9 +39,6 @@ public class Board {
     public int size() {
         return size;
     }
-
-
-
 
     /**
      *
@@ -98,15 +96,7 @@ public class Board {
             while(counter < inserted){
                 partialFill();
             }
-
-
-
-
-
-
         }
-
-
     }
 
     int [][] board = {
@@ -120,6 +110,7 @@ public class Board {
             {0,0,8,0,0,0,0,0,0},
             {0,7,9,0,0,0,0,4,0},
     };
+
 
     public boolean check(){
         if(isSolved()){
@@ -144,6 +135,7 @@ public class Board {
         return false;
     }
 
+//------------------------------------
     public boolean solve() {
 
         if(isSolved()){
@@ -168,12 +160,35 @@ public class Board {
                 return false;
             }
         }
-
         return true;
     }
+    //-----------------------------
 
+    public boolean genBoard() {
+        if(isSolved()){
+            return true;
+        }
+        for(int row = 0;row<size;row++){
+            for(int col = 0; col<size;col++){
+                if(completeBoard[row][col] != No_Input){
+                    continue;
+                }
+                for(int k = 1;k<=size;k++){
 
-
+                    if(sudokuLaw(row,col,k)){
+                        completeBoard[row][col] = k;
+                        if(solve()) {
+                            return true;
+                        }else {
+                            completeBoard[row][col] = No_Input;
+                        }
+                    }
+                }
+                return false;
+            }
+        }
+        return true;
+    }
     /**
      *
      * @param x
@@ -185,19 +200,12 @@ public class Board {
 
             return;
         }
-
         if(v==No_Input || sudokuLaw(x,y,v)){
             this.table[x][y] = v;
             this.truthTable[x][y] = true;
 
         }
-
     }
-    /**
-     *
-     */
-
-
     /**
      *
      * @param x
@@ -222,8 +230,6 @@ public class Board {
                 return false;
             }
         }
-
-
         int boxRow = x - x % (int)Math.sqrt(size);
         int boxColumn = y - y % (int)Math.sqrt(size);
 
