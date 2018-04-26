@@ -11,6 +11,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
+import java.net.Socket;
 import java.net.URL;
 
 import javax.sound.sampled.AudioInputStream;
@@ -48,6 +50,8 @@ public class SudokuDialog extends JFrame {
 
     //Network Items---------------
     private NetworkAdapter network;
+    private Socket incoming;
+    private PrintStream out;
 
 
 
@@ -400,6 +404,16 @@ public class SudokuDialog extends JFrame {
                 if (input == JOptionPane.YES_OPTION) {
                     board.partialFill();
                     repaint();
+                }
+            }
+        });
+
+        netWork.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent click) {
+                int input = JOptionPane.showConfirmDialog(null, "Do you want to Connect to a Network Game?","NetWork" , JOptionPane.YES_NO_OPTION);
+                if (input == JOptionPane.YES_OPTION) {
+                    NetworkAdapter network = new NetworkAdapter(incoming,out);
+                    //repaint();
                 }
             }
         });
