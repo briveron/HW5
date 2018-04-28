@@ -12,6 +12,7 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URL;
 
@@ -50,10 +51,6 @@ public class SudokuDialog extends JFrame {
 
     //Network Items---------------
     private NetworkAdapter network;
-    private Socket incoming;
-    private PrintStream out;
-
-
 
 
     //Network Items--------------
@@ -160,7 +157,8 @@ public class SudokuDialog extends JFrame {
         int j = JOptionPane.showConfirmDialog(null, "Would you like to start a new game?");
 
         if(j==0 ) {
-            board.size = size;
+            board.size=size;
+            //board=new Board(size);
             int[][] newTable = board.getTable();
             for(int x =0; x<board.size;x++) {
                 for(int y=0; y<board.size; y++) {
@@ -169,7 +167,7 @@ public class SudokuDialog extends JFrame {
                 }
             }
             repaint();
-
+            //makeControlPanel();
         }
 
         showMessage("New clicked: " + size);
@@ -337,23 +335,23 @@ public class SudokuDialog extends JFrame {
 
         menuItem.addActionListener(e ->  newClicked(4));
         menuItem0.addActionListener(e ->  newClicked(9));
-        //menuItem1.addActionListener(e -> partiallyFillBoard() );
+        menuItem1.addActionListener(e -> partiallyFillBoard() );
         menuItem2.addActionListener(e -> checkifSolve());
-        menuItem3.addActionListener(e -> board.solve());
-
+        menuItem3.addActionListener(e -> solveMenuItem());
 
         setJMenuBar(menuBar);
-
         setVisible(true);
-
         return menus;
     }
+    private void solveMenuItem() {
+        board.solve();
+        repaint();
+    }
 
-
-
-
-
-
+    private void partiallyFillBoard() {
+        board.partialFill();
+        repaint();
+    }
 
 
     private void setupListeners() {
@@ -412,17 +410,30 @@ public class SudokuDialog extends JFrame {
             public void actionPerformed(ActionEvent click) {
                 int input = JOptionPane.showConfirmDialog(null, "Do you want to Connect to a Network Game?","NetWork" , JOptionPane.YES_NO_OPTION);
                 if (input == JOptionPane.YES_OPTION) {
-                    NetworkAdapter network = new NetworkAdapter(incoming,out);
+                    new Thread(()->{
+                        try{
+                            Socket socket = new Socket();
+                            socket.connect(new InetSocketAddress("127.0.0.1",8000),5000);
+                            pairAsClient(socket);
+                        }catch(Exception e){}
+                    }).start();
+                    //NetworkAdapter network = new NetworkAdapter(incoming,out);
                     //repaint();
                 }
             }
+
         });
-
-
-
 
     }
 
+    NetworkAdapter.MessageListener listener;
+
+    private void pairAsClient(Socket socket){
+        network=new NetworkAdapter(socket);
+        network.setMessageListener(listener);
+        network.writeJoin();
+        network.receiveMessages();
+    }
 
 
 
@@ -435,14 +446,9 @@ public class SudokuDialog extends JFrame {
         return null;
     }
 
-
-
-
     public static void main(String[] args) {
         new SudokuDialog();
     }
-
-
 
     public void checkTrue(){
         showMessage("SOLVED");
@@ -450,7 +456,6 @@ public class SudokuDialog extends JFrame {
     public void SolveableMsg() {
         showMessage("Solveable");
     }
-
     public void NotSolveableMsg() {
         showMessage("Not Solvable");
     }

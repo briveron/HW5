@@ -111,7 +111,6 @@ public class Board {
             {0,7,9,0,0,0,0,4,0},
     };
 
-
     public boolean check(){
         if(isSolved()){
             return true;
@@ -134,7 +133,6 @@ public class Board {
 
         return false;
     }
-
 //------------------------------------
     public boolean solve() {
 
@@ -163,32 +161,6 @@ public class Board {
         return true;
     }
     //-----------------------------
-
-    public boolean genBoard() {
-        if(isSolved()){
-            return true;
-        }
-        for(int row = 0;row<size;row++){
-            for(int col = 0; col<size;col++){
-                if(completeBoard[row][col] != No_Input){
-                    continue;
-                }
-                for(int k = 1;k<=size;k++){
-
-                    if(sudokuLaw(row,col,k)){
-                        completeBoard[row][col] = k;
-                        if(solve()) {
-                            return true;
-                        }else {
-                            completeBoard[row][col] = No_Input;
-                        }
-                    }
-                }
-                return false;
-            }
-        }
-        return true;
-    }
     /**
      *
      * @param x
