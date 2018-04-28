@@ -21,6 +21,8 @@ public class Board {
     private boolean solvable = false;
     private int counter =0;
     private int inserted = 0;
+    int counterN = 0;
+    int counterF =0;
     //private int caseNum = 0;
     /** Size of this board (number of columns/rows). */
     public int size;
@@ -49,55 +51,102 @@ public class Board {
     }
     //Partially fill a board of size 4 with 4 digits
     // Partially fill a board of size 9 with 17 digits
-    public void partialFill(){
-        int min =0;int max =size-1; //input limits
-        int mink=1; int maxk = size;
-        int board4 = 4;int board9 = 0; //numbers to be placed
+ public void partialFill(){
+    	
+    	if(size == 9){
+    		partialFillN();
+    	}
+    	else{
+    		System.out.println("FOUR FILL");
+    		int min =0;int max =size-1; //input limits
+    		int mink=1; int maxk = size;
+    		 int inserted = 4;
+    		Random r = new Random();
+    		int randomX = r.nextInt(max-min+1)+min;
+    		System.out.println("X "+randomX);
+    		int randomY = r.nextInt(max-min+1)+min;
+    		System.out.println("Y "+randomY);
+    		int randomK = r.nextInt(maxk-mink+1)+mink;
+    		System.out.println("K "+randomK);
 
 
-        Random r = new Random();
-        int randominput = r.nextInt(max-min+1)+min;
-        int randominput1 = r.nextInt(max-min+1)+min;
-        int randomk = r.nextInt(maxk-mink+1)+mink;
-
-        if(size ==4){
-            board4 = 4;
-            inserted = board4;
-        }
-        if(size==9){
-
-            for(int i=0;i<9;i++) {
-                for(int j=0;j<9;j++) {
-                    table[i][j] = board[j][i];
-                }
-            }
-        }
-
-        if(table[randominput][randominput1]==No_Input && counter < inserted){
-
-
-            if(!sudokuLaw(randominput,randominput1,randomk)){
-
-            }
-
-            if(counter <inserted && sudokuLaw(randominput,randominput1,randomk)&& table[randominput][randominput1]==0){
-
-                counter++;
-                table[randominput][randominput1] = randomk;
-
-
-            }
-            if(counter>=inserted){
-
-            }
-            if(table[randominput][randominput1]==No_Input && counter < inserted){
-                partialFill();
-            }
-            while(counter < inserted){
-                partialFill();
-            }
-        }
+    		if (table[randomX][randomY] == No_Input){//if position is empty
+    			if(sudokuLaw(randomX,randomY,randomK)){//if input is sudokulaw
+    				///////if leads to a sudoku solution
+    				table[randomX][randomY]= randomK;
+    				counterF = counterF+1;
+    				System.out.println(counterF);
+    				
+    				if(counterF != inserted){
+    					partialFill();
+    				}
+    			}
+    			//empty but not sudoku law
+    			if(counterF != inserted){
+    				System.out.println(counterF +"second");
+    				partialFill();
+    				counterF = counterF+1;
+    			}
+    		}
+    		//Not an empty positon, DO NOTHING
+    		if(table[randomX][randomY] != No_Input){
+        		System.out.println("already placed here");
+        		if(counterF <=inserted){
+        			
+        		}
+        	}
+    	}
     }
+    public void partialFillN(){
+    	
+    	System.out.println("NINE FILL");
+    	int min =0;int max =size-1; //input limits
+    	int mink=1; int maxk = size;
+    	 int insertedN = 17;
+
+    	Random r = new Random();
+    	int randomX = r.nextInt(max-min+1)+min;
+    	System.out.println("X "+randomX);
+    	int randomY = r.nextInt(max-min+1)+min;
+    	System.out.println("Y "+randomY);
+    	int randomK = r.nextInt(maxk-mink+1)+mink;
+    	System.out.println("K "+randomK);
+
+
+    	if (table[randomX][randomY] == No_Input){//if position is empty
+    		if(sudokuLaw(randomX,randomY,randomK)){//if input is sudokulaw
+    			///////if leads to a sudoku solution
+    		//	if(counterN <= insertedN){
+    				System.out.println("counter for "+counterN+ "is less than "+insertedN);
+    				table[randomX][randomY]= randomK;
+    				System.out.println("inserted"+randomK);
+
+    				counterN= counterN+1;
+    				
+    			//}
+
+    				if(counterN != insertedN){
+    					partialFill();
+    				}
+    			
+
+    		}
+    		//empty but not sudoku law
+    		if(counterN != insertedN){
+    			partialFillN();
+    			counterN = counterN+1;
+    		}
+    	}
+    	if(table[randomX][randomY] != No_Input){
+    		System.out.println("already placed here");
+    		if(counterN <=insertedN){
+    			
+    		}
+    	}
+    	
+    	//Not an empty positon, DO NOTHING
+    } 
+
 
     int [][] board = {
             {8,6,0,0,3,0,0,0,2},
