@@ -51,6 +51,7 @@ public class Board {
     }
     //Partially fill a board of size 4 with 4 digits
     // Partially fill a board of size 9 with 17 digits
+
  public void partialFill(){
     	
     	if(size == 9){
@@ -145,20 +146,7 @@ public class Board {
     	}
     	
     	//Not an empty positon, DO NOTHING
-    } 
-
-
-    int [][] board = {
-            {8,6,0,0,3,0,0,0,2},
-            {0,4,0,0,1,6,0,0,0},
-            {0,2,0,0,0,0,0,0,3},
-            {7,0,0,0,0,9,8,0,0},
-            {0,0,0,0,6,8,1,0,0},
-            {1,0,0,0,0,0,5,7,0},
-            {0,0,0,6,2,1,0,9,0},
-            {0,0,8,0,0,0,0,0,0},
-            {0,7,9,0,0,0,0,4,0},
-    };
+    }
 
     public boolean check(){
         if(isSolved()){
@@ -243,8 +231,6 @@ public class Board {
                 return false;
             }
         }
-
-
         for (int ii = 0; ii < size; ii++) {
             if (table[ii][y] == v) {
 
@@ -262,8 +248,6 @@ public class Board {
                 }
             }
         }
-
-
         return true;
     }
     /**

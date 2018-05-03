@@ -51,6 +51,9 @@ public class SudokuDialog extends JFrame {
 
     //Network Items---------------
     private NetworkAdapter network;
+    Socket incoming;
+    PrintStream out;
+
 
 
     //Network Items--------------
@@ -410,6 +413,7 @@ public class SudokuDialog extends JFrame {
             public void actionPerformed(ActionEvent click) {
                 int input = JOptionPane.showConfirmDialog(null, "Do you want to Connect to a Network Game?","NetWork" , JOptionPane.YES_NO_OPTION);
                 if (input == JOptionPane.YES_OPTION) {
+                    /*
                     new Thread(()->{
                         try{
                             Socket socket = new Socket();
@@ -417,8 +421,12 @@ public class SudokuDialog extends JFrame {
                             pairAsClient(socket);
                         }catch(Exception e){}
                     }).start();
-                    //NetworkAdapter network = new NetworkAdapter(incoming,out);
-                    //repaint();
+                    network = new NetworkAdapter(incoming,out);
+                    network.receiveMessages();
+                    network.writeJoin();
+                    */
+
+                    repaint();
                 }
             }
 

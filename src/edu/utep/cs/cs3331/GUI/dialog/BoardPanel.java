@@ -70,7 +70,6 @@ public class BoardPanel extends JPanel {
      * The indexes are encoded and returned as x*100 + y,
      * where x and y are 0-based column/row indexes.
      */
-
     private int locateSquaree(int x, int y) {
         if (x < 0 || x > board.size * squareSize
                 || y < 0 || y > board.size * squareSize) {
