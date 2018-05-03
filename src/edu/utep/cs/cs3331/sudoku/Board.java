@@ -84,14 +84,12 @@ public class Board {
     			}
     			//empty but not sudoku law
     			if(counterF != inserted){
-    				System.out.println(counterF +"second");
     				partialFill();
     				counterF = counterF+1;
     			}
     		}
     		//Not an empty positon, DO NOTHING
     		if(table[randomX][randomY] != No_Input){
-        		System.out.println("already placed here");
         		if(counterF <=inserted){
         			
         		}

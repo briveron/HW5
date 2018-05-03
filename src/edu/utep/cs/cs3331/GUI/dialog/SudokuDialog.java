@@ -1,26 +1,30 @@
 package edu.utep.cs.cs3331.GUI.dialog;
 
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
-import java.awt.Panel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.io.File;
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.io.PrintWriter;
 import java.net.InetSocketAddress;
+
 import java.net.Socket;
 import java.net.URL;
 
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.UnsupportedAudioFileException;
+
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -32,8 +36,11 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.JToolBar;
-import javax.swing.KeyStroke;
+import javax.swing.text.DefaultCaret;
 
 import edu.utep.cs.cs3331.sudoku.Board;
 import edu.utep.cs.cs3331.Network.NetworkAdapter;
@@ -48,11 +55,7 @@ import edu.utep.cs.cs3331.Network.NetworkAdapter;
 @SuppressWarnings("serial")
 public class SudokuDialog extends JFrame {
 
-
-    //Network Items---------------
-    private NetworkAdapter network;
-    Socket incoming;
-    PrintStream out;
+    private Socket socket;
 
 
 
@@ -91,6 +94,7 @@ public class SudokuDialog extends JFrame {
     /** Create a new dialog of the given screen dimension. */
     public SudokuDialog(Dimension dim) {
         super("Sudoku");
+        int clientNum = 0;
         setSize(dim);
         board = new Board(9);
         boardPanel = new BoardPanel(board, this::boardClicked);
@@ -115,13 +119,22 @@ public class SudokuDialog extends JFrame {
      * @param y 0-based column index of the clicked square.
      */
     private void boardClicked(int x, int y) {
+        try {
+            PrintWriter out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()));
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            out.println("Position changed at X:"+ x+ " Y:"+y);
+            disPos("Position changed at X:"+ x+ " Y:"+y);
+            out.flush();
+            board.insert(x,y,inputVal);
+            showMessage(String.format("Board clicked: x = %d, y = %d",  x, y));
+            if(board.isSolved()) {
+                checkTrue();
+            }
+            repaint();
+        } catch (IOException e) {
 
-        board.insert(x,y,inputVal);
-        showMessage(String.format("Board clicked: x = %d, y = %d",  x, y));
-        if(board.isSolved()) {
-            checkTrue();
+            e.printStackTrace();
         }
-        repaint();
 
     }
 
@@ -131,20 +144,29 @@ public class SudokuDialog extends JFrame {
      * @param number Clicked number (1-9), or 0 for "X".
      */
     private void numberClicked(int number) {
-        showMessage("Number clicked: " + number);
-        if( number > board.size || number <0){
-            showMessage("INVALID NUMBER FOR BOARD SIZE: "+ number);
+        try {
+            PrintWriter out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()));
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            showMessage("Number clicked: " + number);
+            if( number > board.size || number <0){
+                showMessage("INVALID NUMBER FOR BOARD SIZE: "+ number);
 
-        }if(board.isSolved()) {
-            checkTrue();
+            }if(board.isSolved()) {
+                checkTrue();
+            }
+
+            else{
+                inputVal = number;
+                out.println("Placed number "+number);
+                dis(number);
+                out.flush();
+            }
+
+
+            repaint();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
-        else{
-            inputVal = number;
-        }
-
-
-        repaint();
     }
 
     /**
@@ -157,28 +179,56 @@ public class SudokuDialog extends JFrame {
     private void newClicked(int size) {
         max = size;
 
-        int j = JOptionPane.showConfirmDialog(null, "Would you like to start a new game?");
+        try {
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            PrintWriter out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()));
+            out.println("Requesting New Game of size "+size);
+            disSize(size);
+            out.flush();
+            int j = JOptionPane.showConfirmDialog(null, "Would you like to start a new game?");
 
-        if(j==0 ) {
-            board.size=size;
-            //board=new Board(size);
-            int[][] newTable = board.getTable();
-            for(int x =0; x<board.size;x++) {
-                for(int y=0; y<board.size; y++) {
-                    newTable[x][y]=0;
+            if(j==0 ) {
+                board.size=size;
+                //board=new Board(size);
+                int[][] newTable = board.getTable();
+                for(int x =0; x<board.size;x++) {
+                    for(int y=0; y<board.size; y++) {
+                        newTable[x][y]=0;
 
+                    }
                 }
+                repaint();
+                //makeControlPanel();
             }
-            repaint();
-            //makeControlPanel();
-        }
 
-        showMessage("New clicked: " + size);
-        repaint();
+            showMessage("New clicked: " + size);
+            repaint();
+        } catch (IOException e) {
+
+            e.printStackTrace();
+        }
     }
 
 
+    private final static String newline = "\n";
+    private void dis(int msg){
 
+        msgDisplay.append( "Player :"+" placed "+msg + newline);
+        serverEdit.selectAll();
+
+    }
+    private void disPos(String msg){
+
+        msgDisplay.append( msg + newline);
+        serverEdit.selectAll();
+
+    }
+    private void disSize(int msg){
+
+        msgDisplay.append( "Player :"+" new game of size "+msg + newline);
+        serverEdit.selectAll();
+
+    }
     /**
      * Display the given string in the message bar.
      * @param msg Message to be displayed.
@@ -186,7 +236,36 @@ public class SudokuDialog extends JFrame {
     private void showMessage(String msg) {
         msgBar.setText(msg);
     }
+    /** Configure UI of this dialog. */
+    private void configureGui() {
+        JPanel connectPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
+        //connectButton = new JButton("Connect");
+        // connectButton.setFocusPainted(false);
+        serverEdit = new JTextField("localhost", 18);
+        portEdit = new JTextField("8000", 4);
 
+        // connectPanel.add(connectButton);
+        connectPanel.add(serverEdit);
+        connectPanel.add(portEdit);
+
+        msgDisplay = new JTextArea(10, 30);
+        msgDisplay.setEditable(false);
+        DefaultCaret caret = (DefaultCaret)msgDisplay.getCaret();
+        caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE); // autoscroll
+        JScrollPane msgScrollPane = new JScrollPane(msgDisplay);
+
+        JPanel sendPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
+        msgEdit = new JTextField("Enter a message.", 27);
+        sendButton = new JButton("Send");
+        sendButton.setFocusPainted(true);
+        sendPanel.add(msgEdit);
+        sendPanel.add(sendButton);
+
+        setLayout(new BorderLayout());
+        add(connectPanel, BorderLayout.EAST);
+        add(msgScrollPane, BorderLayout.CENTER);
+        add(sendPanel, BorderLayout.EAST);
+    }
     /** Configure the UI. */
     private void configureUI() {
         setIconImage(createImageIcon("sudoku.png").getImage());
@@ -411,37 +490,44 @@ public class SudokuDialog extends JFrame {
 
         netWork.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent click) {
-                int input = JOptionPane.showConfirmDialog(null, "Do you want to Connect to a Network Game?","NetWork" , JOptionPane.YES_NO_OPTION);
-                if (input == JOptionPane.YES_OPTION) {
-                    /*
-                    new Thread(()->{
-                        try{
-                            Socket socket = new Socket();
-                            socket.connect(new InetSocketAddress("127.0.0.1",8000),5000);
-                            pairAsClient(socket);
-                        }catch(Exception e){}
-                    }).start();
-                    network = new NetworkAdapter(incoming,out);
-                    network.receiveMessages();
-                    network.writeJoin();
-                    */
+                configureGui();
 
-                    repaint();
+                try {
+
+                    socket = new Socket(serverEdit.getText(), 8008);
+                    PrintWriter out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()));
+
+                    BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
+
+
+                try {
+                    Socket s = new Socket("localhost", 8004);
+                    sendButton.setFocusPainted(true);
+
+                } catch (IOException e) {
+                    // handle exception …
+
+                }
+
             }
 
         });
 
     }
+    private JTextField serverEdit;
+    private JButton sendButton;
+    private JTextArea msgDisplay;
+    private JTextField msgEdit;
 
-    NetworkAdapter.MessageListener listener;
+    private JTextField portEdit;
 
-    private void pairAsClient(Socket socket){
-        network=new NetworkAdapter(socket);
-        network.setMessageListener(listener);
-        network.writeJoin();
-        network.receiveMessages();
-    }
+
+
 
 
 
@@ -453,7 +539,9 @@ public class SudokuDialog extends JFrame {
         }
         return null;
     }
-
+    private void log(String message){
+        System.out.println(message);
+    }
     public static void main(String[] args) {
         new SudokuDialog();
     }

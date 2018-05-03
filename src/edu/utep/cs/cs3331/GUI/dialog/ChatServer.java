@@ -6,7 +6,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-import sudoku.model.Board;
+import edu.utep.cs.cs3331.sudoku.*;
 
 /**
  * A simple chat server implemented using TCP/IP sockets. A client can
